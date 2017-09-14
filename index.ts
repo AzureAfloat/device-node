@@ -1,0 +1,1 @@
+//switch on config and load the module for the configured role (IOW, if this is the cockpit device, then import the cockpit module)
