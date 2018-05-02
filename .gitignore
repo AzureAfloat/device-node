@@ -50,3 +50,4 @@ jspm_packages
 *.js
 *.js.map
 .vscode
+package-lock.json
