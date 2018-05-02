@@ -14,7 +14,7 @@ export default {
             ]
         },
         engineroom: {
-            name: "Cockpit",
+            name: "EngineRoom",
             type: "rpz",
             io: [
                 {
