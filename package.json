@@ -8,5 +8,8 @@
   },
   "keywords": [],
   "author": "Jeremy Foster <jeremy.foster@live.com> (http://codefoster.com)",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "dependencies": {
+    "ws": "^5.1.1"
+  }
 }
