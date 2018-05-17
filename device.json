@@ -1,5 +1,0 @@
-{
-    "websocketUrl":"ws://localhost:3001/signalk/v1/stream?subscribe=all",
-    "deviceName":"rpz-cockpit",
-    "friendlyName":"Cockpit"
-}
