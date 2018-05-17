@@ -10,6 +10,9 @@
   "author": "Jeremy Foster <jeremy.foster@live.com> (http://codefoster.com)",
   "license": "Apache-2.0",
   "dependencies": {
-    "ws": "^5.1.1"
+    "@types/node": "^10.1.1",
+    "@types/ws": "^5.1.1",
+    "ws": "^5.1.1",
+    "yargs": "^11.0.0"
   }
 }
