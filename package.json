@@ -12,6 +12,7 @@
   "dependencies": {
     "@types/node": "^10.1.1",
     "@types/ws": "^5.1.1",
+    "command-line-args": "^5.0.2",
     "ws": "^5.1.1",
     "yargs": "^11.0.0"
   }
