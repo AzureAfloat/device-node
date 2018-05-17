@@ -1,30 +1,41 @@
-//switch on config and load the module for the configured role (IOW, if this is the cockpit device, then import the cockpit module)
-
-//send delta message with hard coded temperature
-let delta = {
-    "updates": [
-        {
-            "source": {
-                "label": "RPZ Cockpit GPIO",
-                "type": "GPIO",
-                "src": "7"
-            },
-            "values": [
-                {
-                    "path": "environment.temperature",
-                    "value": 68
-                }
-            ]
-        }
-    ]
-};
-
+const five = require("johnny-five");
+const Raspi = require('raspi-io');
 const WebSocket = require('ws');
-const ws = new WebSocket('ws://localhost:3001/signalk/v1/stream?subscribe=all');
+const config = require('./device.json');
 
-ws.on('open', () => {
-    console.log('sending');
-    setInterval(() => ws.send(JSON.stringify(delta)), 1000);
+//setup websockets
+const ws = new WebSocket(config.webocketUrl);
+
+//setup j5
+let board = new five.Board({ io: new Raspi() });
+
+//ready the board and the websocket connection
+board.on("ready", () => {
+    ws.on('open', () => {
+
+        //just send hard coded messages every second
+        setInterval(() => sendDeltaMessage(config.deviceName, "environment.temperature", 68), 1000);
+        setInterval(() => sendDeltaMessage(config.deviceName, "environment.humidity", 40), 1200);
+    });
 });
 
-// ws.on('message', data => console.log(data));
+function sendDeltaMessage(deviceId: string, path: string, value: any) {
+    let delta = {
+        "updates": [
+            {
+                "source": {
+                    "label": deviceId,
+                    "type": "GPIO",
+                    "src": "7"
+                },
+                "values": [
+                    {
+                        "path": path,
+                        "value": value
+                    }
+                ]
+            }
+        ]
+    };
+    ws.send(JSON.stringify(delta));
+}
