@@ -34,14 +34,12 @@ function mockSensor(datapoint:string, median: number, variance: number, frequenc
     }, frequency)
 }
 
-function sendDeltaMessage(deviceId: string, path: string, value: any) {
+function sendDeltaMessage(deviceName: string, path: string, value: any) {
     let delta = {
         "updates": [
             {
                 "source": {
-                    "label": deviceId,
-                    "type": "GPIO",
-                    "src": "7"
+                    "src": deviceName
                 },
                 "values": [
                     {
