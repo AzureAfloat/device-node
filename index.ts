@@ -1,4 +1,3 @@
-let WebSocket = require('ws');
 let config = require('./device.json');
 const commandLineArgs = require('command-line-args')
 
