@@ -21,12 +21,42 @@ const ws = new WS(config.websocketUrl);
 ws.onopen = () => {
     switch (config.deviceName) {
         case "rpz-cockpit":
-            //send mock datapoints
-            mockSensor("environment.temperature", 68, 5, 3000);
+            mockSensor("environment/outside/temperature", 68, 5, 3000);
+            mockSensor("environment/outside/humidity", 40, 3, 3000);
             break;
         case "rpz-masthead":
-            //send mock datapoints
-            mockSensor("environment.humidity", 40, 3, 3000);
+            mockSensor("environment/wind/speedApparent", 12, 5, 1000);
+            mockSensor("environment/outside/temperature", 55, 1, 3000);
+            mockSensor("environment/wind/directionTrue", 180, 5, 1000);
+            mockSensor("environment/outside/humidity", 40, 3, 3000);
+            break;
+        case "rpz-engine":
+            mockSensor("environment/inside/temperature", 40, 3, 3000);
+            mockSensor("propulsion/mainEngine/coolantTemperature", 88, 1, 3000);
+            mockSensor("propulsion/mainEngine/intakeManifoldTemperature", 120, 1, 3000);
+
+            break;
+        case "rpz-aftstar":
+            mockSensor("environment/inside/temperature", 68, 5, 3000);
+            mockSensor("environment/inside/humidity", 40, 3, 3000);
+            break;
+        case "rpz-aftport":
+            mockSensor("environment/inside/temperature", 68, 5, 3000);
+            mockSensor("environment/inside/humidity", 40, 3, 3000);
+            break;
+        case "rpz-master":
+            mockSensor("environment/inside/temperature", 68, 5, 3000);
+            mockSensor("environment/inside/humidity", 40, 3, 3000);
+            break;
+        case "rpz-cabin":
+            mockSensor("environment/inside/temperature", 68, 5, 3000);
+            mockSensor("environment/inside/humidity", 40, 3, 3000);
+            mockSensor("electrical/batteries/starter/voltage", 13.3, 0.2, 3000);
+            mockSensor("electrical/batteries/house/voltage", 13.1, 0.1, 3000);
+            mockSensor("electrical/batteries/starter/current", 0, 0.1, 3000);
+            mockSensor("electrical/batteries/house/current", 1.4, 0.3, 3000);
+            mockSensor("electrical/batteries/starter/temperature", 67, 0, 3000);
+            mockSensor("electrical/batteries/house/temperature", 67, 0, 3000);
             break;
         default:
             console.log(`A device with the name ${config.deviceName} was not found.`);
