@@ -78,7 +78,7 @@ function sendDeltaMessage(deviceName: string, path: string, value: any) {
         "updates": [
             {
                 "source": {
-                    "src": deviceName
+                    "deviceName": deviceName
                 },
                 "values": [
                     {
