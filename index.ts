@@ -93,7 +93,7 @@ function sendDeltaMessage(deviceName: string, path: string, value: any) {
     if (ws.readyState == 3) {
         msgs.push(delta);
     }
-    else if (ws.readyState == 1) {
+    else {
         ws.send(JSON.stringify(msgs.pop()));
     }
 };
