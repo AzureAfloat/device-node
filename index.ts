@@ -89,13 +89,12 @@ function sendDeltaMessage(deviceName: string, path: string, value: any) {
             }
         ]
     };
-    var msgs = [];
-    ws.onclose = function () {
-        if (ws.readyState == 3) {
-            msgs.push(delta);
-        }
-        else {
-            ws.send(JSON.stringify(delta));
-        }
-    };
-}
+    let msgs:any = [];
+    if (ws.readyState == 3) {
+        msgs.push(delta);
+    }
+    else if (ws.readyState == 1) {
+        ws.send(JSON.stringify(msgs.pop()));
+    }
+};
+
