@@ -27,7 +27,7 @@ ws.onopen = () => {
         case "rpz-masthead":
             mockSensor("environment/wind/speedApparent", 12, 5, 1000);
             mockSensor("environment/outside/temperature", 55, 1, 3000);
-            mockSensor("environment/wind/directionTrue", 180, 5, 1000);
+            mockSensor("environment/wind/directionTrue", 180, 45, 250);
             mockSensor("environment/outside/humidity", 40, 3, 3000);
             break;
         case "rpz-engine":
