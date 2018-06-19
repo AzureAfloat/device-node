@@ -1,4 +1,3 @@
-import { OPEN } from "ws";
 const WS = require('ws');
 const fs = require('fs');
 let config = require('./device.json');
@@ -17,8 +16,59 @@ args.filter(a => a.required && !config[a.name]).forEach(a => {
 })
 
 //setup websockets
-const ws = new WS(config.websocketUrl);
 
+function WebSocketClient() {
+    // Message number
+    this.autoReconnectInterval = 5000;	// ms
+}
+WebSocketClient.prototype.open = function (url) {
+    this.url = url;
+    this.instance = new WS(this.url);
+    this.instance.on('open', () => {
+        this.onopen();
+    });
+    this.instance.on('error', (e) => {
+        switch (e.code) {
+            case 'ECONNREFUSED':
+                this.reconnect(e);
+                break;
+            default:
+                this.onerror(e);
+                break;
+        }
+    });
+}
+WebSocketClient.prototype.close = function (e) {
+    this.instance.on('close', (e) => {
+        switch (e.code) {
+            case 1000:	// CLOSE_NORMAL
+                console.log("WebSocket: closed");
+                break;
+            default:	// Abnormal closure
+                this.reconnect(e);
+                break;
+        }
+        this.onclose(e);
+    });
+}
+WebSocketClient.prototype.send = function (data) {
+    try {
+        this.instance.send(data);
+    } catch (e) {
+        this.instance.emit('error', e);
+    }
+}
+WebSocketClient.prototype.reconnect = function (e) {
+    console.log(`WebSocketClient: retry in ${this.autoReconnectInterval}ms`, e);
+    this.instance.removeAllListeners();
+    var that = this;
+    setTimeout(function () {
+        console.log("WebSocketClient: reconnecting...");
+        that.open(that.url);
+    }, this.autoReconnectInterval);
+}
+var ws = new WebSocketClient();
+ws.open(config.websocketUrl);
 ws.onopen = () => {
     switch (config.deviceName) {
         case "rpz-cockpit":
@@ -74,6 +124,7 @@ function mockSensor(datapoint: string, median: number, variance: number, frequen
     }, frequency)
 }
 
+  
 function sendDeltaMessage(deviceName: string, path: string, value: any) {
     let delta = {
         "updates": [
@@ -90,14 +141,7 @@ function sendDeltaMessage(deviceName: string, path: string, value: any) {
             }
         ]
     };
-    if (ws.readyState == OPEN) {
-        ws.send(JSON.stringify(delta));
-    }
-    setInterval(() => {
-        if (ws.readyState == 3 || ws.readyState == 2) {
-            let writeStream = fs.createWriteStream('deltaMessages.txt');
-            writeStream.write( JSON.stringify(delta));
-        }
-    }, 10000)
+    ws.send(JSON.stringify(delta));
 };
+
 
