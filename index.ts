@@ -1,5 +1,6 @@
+import { OPEN } from "ws";
 const WS = require('ws');
-
+const fs = require('fs');
 let config = require('./device.json');
 const commandLineArgs = require('command-line-args')
 
@@ -89,12 +90,14 @@ function sendDeltaMessage(deviceName: string, path: string, value: any) {
             }
         ]
     };
-    let msgs:any = [];
-    if (ws.readyState == 3) {
-        msgs.push(delta);
+    if (ws.readyState == OPEN) {
+        ws.send(JSON.stringify(delta));
     }
-    else {
-        ws.send(JSON.stringify(msgs.pop()));
-    }
+    setInterval(() => {
+        if (ws.readyState == 3 || ws.readyState == 2) {
+            let writeStream = fs.createWriteStream('deltaMessages.txt');
+            writeStream.write( JSON.stringify(delta));
+        }
+    }, 10000)
 };
 
