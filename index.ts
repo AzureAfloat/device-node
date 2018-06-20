@@ -2,7 +2,7 @@ const WS = require('ws');
 const fs = require('fs');
 let config = require('./device.json');
 const commandLineArgs = require('command-line-args')
-
+const stream = require('stream');
 //override config with command line options  
 let args = [
     { name: 'websocketUrl', alias: 'u', required: true },
@@ -33,12 +33,11 @@ WebSocketClient.prototype.open = function (url) {
                 this.reconnect(e);
                 break;
             default:
+                this.reconnect(e);
                 this.onerror(e);
                 break;
         }
     });
-}
-WebSocketClient.prototype.close = function (e) {
     this.instance.on('close', (e) => {
         switch (e.code) {
             case 1000:	// CLOSE_NORMAL
@@ -67,6 +66,7 @@ WebSocketClient.prototype.reconnect = function (e) {
         that.open(that.url);
     }, this.autoReconnectInterval);
 }
+WebSocketClient.prototype.onerror = function (e) { console.log("WebSocketClient: error", arguments); }
 var ws = new WebSocketClient();
 ws.open(config.websocketUrl);
 ws.onopen = () => {
@@ -124,7 +124,7 @@ function mockSensor(datapoint: string, median: number, variance: number, frequen
     }, frequency)
 }
 
-  
+
 function sendDeltaMessage(deviceName: string, path: string, value: any) {
     let delta = {
         "updates": [
@@ -141,7 +141,7 @@ function sendDeltaMessage(deviceName: string, path: string, value: any) {
             }
         ]
     };
-    ws.send(JSON.stringify(delta));
+    if (ws.readyState == 0 && ws.readyState == 1)
+        ws.send(JSON.stringify(delta));
 };
-
-
+ws.onclose = () => console.log("Websocket is closed reconnecting...")
