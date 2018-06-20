@@ -15,10 +15,8 @@ args.filter(a => a.required && !config[a.name]).forEach(a => {
     throw new Error(`A ${a.name} argument must be provided either in a device.json file or as a command line argument (--${a.name} or -${a.alias}).`);
 })
 
-//setup websockets
-
+//wrapper function for our websocket
 function WebSocketClient() {
-    // Message number
     this.autoReconnectInterval = 5000;	// ms
 }
 WebSocketClient.prototype.open = function (url) {
@@ -66,7 +64,8 @@ WebSocketClient.prototype.reconnect = function (e) {
         that.open(that.url);
     }, this.autoReconnectInterval);
 }
-WebSocketClient.prototype.onerror = function (e) { console.log("WebSocketClient: error", arguments); }
+WebSocketClient.prototype.onerror = () => console.log("WebSocketClient: error", arguments);
+
 var ws = new WebSocketClient();
 ws.open(config.websocketUrl);
 ws.onopen = () => {
@@ -123,7 +122,6 @@ function mockSensor(datapoint: string, median: number, variance: number, frequen
         sendDeltaMessage(config.deviceName, datapoint, value)
     }, frequency)
 }
-
 
 function sendDeltaMessage(deviceName: string, path: string, value: any) {
     let delta = {
