@@ -1,3 +1,4 @@
+import { OPEN } from "ws";
 const WS = require('ws');
 const fs = require('fs');
 let config = require('./device.json');
@@ -14,10 +15,9 @@ config = { ...config, ...commandLineArgs(args) };
 args.filter(a => a.required && !config[a.name]).forEach(a => {
     throw new Error(`A ${a.name} argument must be provided either in a device.json file or as a command line argument (--${a.name} or -${a.alias}).`);
 })
-
 //wrapper function for our websocket
 function WebSocketClient() {
-    this.autoReconnectInterval = 5000;	// ms
+    this.autoReconnectInterval = 5000;	// s
 }
 WebSocketClient.prototype.open = function (url) {
     this.url = url;
@@ -121,8 +121,8 @@ function mockSensor(datapoint: string, median: number, variance: number, frequen
         console.log(`Sending ${value} for ${datapoint}`);
         sendDeltaMessage(config.deviceName, datapoint, value)
     }, frequency)
-}
 
+}
 function sendDeltaMessage(deviceName: string, path: string, value: any) {
     let delta = {
         "updates": [
@@ -139,7 +139,7 @@ function sendDeltaMessage(deviceName: string, path: string, value: any) {
             }
         ]
     };
-    if (ws.readyState == 0 && ws.readyState == 1)
+    if (ws.readyState === OPEN)
         ws.send(JSON.stringify(delta));
 };
 ws.onclose = () => console.log("Websocket is closed reconnecting...")
