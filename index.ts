@@ -1,9 +1,9 @@
-import { OPEN } from "ws";
-const WS = require('ws');
-const fs = require('fs');
+import { WebSocketClient } from "./WebSocketClient";
+
+// const WS = require('ws');
 let config = require('./device.json');
 const commandLineArgs = require('command-line-args')
-const stream = require('stream');
+
 //override config with command line options  
 let args = [
     { name: 'websocketUrl', alias: 'u', required: true },
@@ -15,60 +15,11 @@ config = { ...config, ...commandLineArgs(args) };
 args.filter(a => a.required && !config[a.name]).forEach(a => {
     throw new Error(`A ${a.name} argument must be provided either in a device.json file or as a command line argument (--${a.name} or -${a.alias}).`);
 })
-//wrapper function for our websocket
-function WebSocketClient() {
-    this.autoReconnectInterval = 5000;	// s
-}
-WebSocketClient.prototype.open = function (url) {
-    this.url = url;
-    this.instance = new WS(this.url);
-    this.instance.on('open', () => {
-        this.onopen();
-    });
-    this.instance.on('error', (e) => {
-        switch (e.code) {
-            case 'ECONNREFUSED':
-                this.reconnect(e);
-                break;
-            default:
-                this.reconnect(e);
-                this.onerror(e);
-                break;
-        }
-    });
-    this.instance.on('close', (e) => {
-        switch (e.code) {
-            case 1000:	// CLOSE_NORMAL
-                console.log("WebSocket: closed");
-                break;
-            default:	// Abnormal closure
-                this.reconnect(e);
-                break;
-        }
-        this.onclose(e);
-    });
-}
-WebSocketClient.prototype.send = function (data) {
-    try {
-        this.instance.send(data);
-    } catch (e) {
-        this.instance.emit('error', e);
-    }
-}
-WebSocketClient.prototype.reconnect = function (e) {
-    console.log(`WebSocketClient: retry in ${this.autoReconnectInterval}ms`, e);
-    this.instance.removeAllListeners();
-    var that = this;
-    setTimeout(function () {
-        console.log("WebSocketClient: reconnecting...");
-        that.open(that.url);
-    }, this.autoReconnectInterval);
-}
-WebSocketClient.prototype.onerror = () => console.log("WebSocketClient: error", arguments);
 
-var ws = new WebSocketClient();
-ws.open(config.websocketUrl);
-ws.onopen = () => {
+// const ws = new WS(config.websocketUrl);
+let client = new WebSocketClient(config.websocketUrl);
+
+client.on('open', () => {
     switch (config.deviceName) {
         case "rpz-cockpit":
             mockSensor("environment/outside/temperature", 68, 5, 3000);
@@ -111,7 +62,7 @@ ws.onopen = () => {
         default:
             console.log(`A device with the name ${config.deviceName} was not found.`);
     }
-};
+});
 
 //make it easy to create mock datapoints and send them as delta messages
 function mockSensor(datapoint: string, median: number, variance: number, frequency: number) {
@@ -139,7 +90,7 @@ function sendDeltaMessage(deviceName: string, path: string, value: any) {
             }
         ]
     };
-    if (ws.readyState === OPEN)
-        ws.send(JSON.stringify(delta));
+        client.send(JSON.stringify(delta));
 };
-ws.onclose = () => console.log("Websocket is closed reconnecting...")
+
+ 
