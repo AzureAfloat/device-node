@@ -33,36 +33,82 @@ args.filter(a => a.required && !config[a.name]).forEach(a => {
 
             let client = new FaceAPIClient(credentials, 'westus');
 
-            //Detect face & attributes
-            let fileStream = fs.createReadStream('faces/brendon1.jpg');
-            let data = client.face.detectInStreamWithHttpOperationResponse(fileStream, {
-              returnFaceId: true,
-              returnFaceAttributes: ['age','gender','headPose','smile','facialHair','glasses','emotion','hair','makeup','occlusion','accessories','exposure','noise']
-            }).then(httpResponse => console.log(httpResponse.response.body)
-            ).catch(err => { throw err; });
-
             //Create new PersonGroup
+            function makePersonGroup(pGroupId) //pGroupId is a string with NO CAPITAL LETTERS
+            {
+                client.personGroup.create(pGroupId,{
+                    name: pGroupId
+                });
+                console.log("Just created this PersonGroup: ", pGroupId);
+            }
 
-            //Margie's help:
-            // client.personGroup.create = function (personGroup1) {
-            //     personGroup1 = 'group1'
-            //     let personGroupId = {};
-            //     personGroupId = data;
-            //     return personGroup1 + personGroupId;
-            // }
-
-            let testGroup = client.personGroup.create("personGroup1", "group1" //personGroupId, group's name
-            ).then(httpResonse => console.log(httpResonse.response.body)
-            ).catch(err => { throw err; });
+            var testGroupId = 'testgroup2';
+            makePersonGroup(testGroupId);
 
             //Create a Person in specified PersonGroup
-            let bUrie = client.face.person.create("personGroup1", "brendonUrie" //personGroupId, person's name
-            ).then(httpResponse => console.log(httpResponse.response.body)
-            ).catch(err => { throw err; }); 
+            var personData;
+            var testPersonId;
 
-            //Add Person to PersonGroup
+            function makePersonInGroup(pGroupId, personName)
+            {
+                client.person.create(pGroupId,{ 
+                    personGroupId: pGroupId,
+                    name: personName
+                }).then(httpResponse => {
+                    personData = JSON.parse(httpResponse.response.body)
+                    console.log(personData);
+                    //testPersonId = personData[0].personId;
+                    //console.log(personData);
+                    //console.log("This person's PersonId is: ", testPersonId);
+                });
+                console.log("Just created the Person ", personName, " in the PersonGroup ", pGroupId);
+            }
+
+            var testPersonName = 'testpersonname';
+            makePersonInGroup(testGroupId, testPersonName);
+
+            // let bUrie = client.person.create("personGroup1", "brendonUrie" //personGroupId, person's name
+            // ).then(httpResponse => console.log(httpResponse.response.body)
+            // ).catch(err => { throw err; }); 
 
             //Add Face to a Person
+            var addFaceData;
+
+            function addFaceToPerson(pGroupId, pId, imagePath)
+            {
+                client.person.addPersonFaceFromStreamWithHttpOperationResponse(pGroupId, pId, imagePath, {
+                    personGroupId: pGroupId,
+                    personId: pId
+                }).then(httpResponse => {
+                    addFaceData = JSON.parse(httpResponse.response.body)
+                    console.log(addFaceData);
+                    testPersonId = addFaceData.personId;
+                    console.log("This person's PersonId is: ", testPersonId)
+                })
+                console.log("Just added face from photo ", imagePath, " to the Person ", 
+                    pId, " in the PersonGroup ", pGroupId);
+            }
+
+            addFaceToPerson(testGroupId, testPersonId, 'faces/brendon1.jpg');
+
+                //Detect face, then parse JSON response to get faceID
+            var data;
+            var photoFaceId;
+
+            let fileStream = fs.createReadStream('faces/brendon1.jpg');
+            client.face.detectInStreamWithHttpOperationResponse(fileStream, {
+              returnFaceId: true
+            }).then(httpResponse => {
+                data = JSON.parse(httpResponse.response.body)
+                photoFaceId = data[0].faceId;
+                //console.log(data[0].faceId);
+                //console.log(photoFaceId);
+                console.log("This photo's faceId is: ", photoFaceId);
+            }).catch(err => { throw err; });
+
+            //function addFaceIdToPerson()
+
+            
             
 
             //Train PersonGroup
