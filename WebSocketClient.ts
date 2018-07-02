@@ -1,19 +1,19 @@
+
 const WS = require('ws');
 const EventEmitter = require('events').EventEmitter;
-
 export class WebSocketClient extends EventEmitter {
     connectInterval;
-    private socket: WebSocket;
-
     constructor(private options) {
         super();
-        this.socket = new WS(this.options);
         this.connect();
+        this.close();
     }
-
     private connect() {
+        this.socket = new WS(this.options);
         this.socket.onopen = () => {
             this.emit('open');
+            clearInterval(this.connectInterval);
+            console.log('Websocket is open');
         }
         this.socket.onerror = (ev) => {
             switch (ev.error.code) {
@@ -24,15 +24,21 @@ export class WebSocketClient extends EventEmitter {
             }
         }
     }
-
-    private reconnect() {
-        console.log('reconnecting...');
-        this.connectInterval = setInterval(() => this.connect(), 5000);
-        clearInterval(this.connectInterval);
+    private close() {
+        this.socket.onclose = () => {
+            console.log('Websocket is closed reestablishing connection..');
+            this.reconnect();
+        }
     }
-
-    public send(msg) {
-        this.socket.send(msg);
+    reconnect() {
+        clearInterval(this.connectInterval);
+        this.connectInterval = setInterval(() => {
+            console.log('reconnecting...');
+            this.connect();
+        }, 5000);
+    }
+    send(msg) {
+        this.socket.send(msg); 
     }
 
 }

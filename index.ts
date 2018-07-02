@@ -1,4 +1,5 @@
 import { WebSocketClient } from "./WebSocketClient";
+import { OPEN } from "ws";
 
 // const WS = require('ws');
 let config = require('./device.json');
@@ -90,7 +91,5 @@ function sendDeltaMessage(deviceName: string, path: string, value: any) {
             }
         ]
     };
-        client.send(JSON.stringify(delta));
+    if (client.readyState == OPEN) client.send(JSON.stringify(delta));
 };
-
- 
