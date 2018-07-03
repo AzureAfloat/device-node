@@ -91,5 +91,5 @@ function sendDeltaMessage(deviceName: string, path: string, value: any) {
             }
         ]
     };
-    if (client.readyState == OPEN) client.send(JSON.stringify(delta));
+    client.send(JSON.stringify(delta));
 };

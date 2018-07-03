@@ -1,4 +1,4 @@
-
+import { OPEN } from "ws";
 const WS = require('ws');
 const EventEmitter = require('events').EventEmitter;
 export class WebSocketClient extends EventEmitter {
@@ -18,6 +18,8 @@ export class WebSocketClient extends EventEmitter {
         this.socket.onerror = (ev) => {
             switch (ev.error.code) {
                 case 'ECONNRESET':
+                    this.reconnect();
+                    break;
                 case 'ECONNREFUSED':
                     this.reconnect();
                     break;
@@ -30,15 +32,19 @@ export class WebSocketClient extends EventEmitter {
             this.reconnect();
         }
     }
-    reconnect() {
+    private reconnect() {
         clearInterval(this.connectInterval);
         this.connectInterval = setInterval(() => {
             console.log('reconnecting...');
             this.connect();
         }, 5000);
     }
-    send(msg) {
-        this.socket.send(msg); 
+    public send(msg) {
+        if (WS.readyState != OPEN)
+            this.close()
+
+        if (WS.readyState === OPEN)
+            this.socket.send(msg);
     }
 
 }
