@@ -1,9 +1,9 @@
 import { WebSocketClient } from "./WebSocketClient";
-import { OPEN } from "ws";
 
 // const WS = require('ws');
 let config = require('./device.json');
 const commandLineArgs = require('command-line-args')
+let sendTimers: any[] = [];
 
 //override config with command line options  
 let args = [
@@ -19,7 +19,6 @@ args.filter(a => a.required && !config[a.name]).forEach(a => {
 
 // const ws = new WS(config.websocketUrl);
 let client = new WebSocketClient(config.websocketUrl);
-
 client.on('open', () => {
     switch (config.deviceName) {
         case "rpz-cockpit":
@@ -64,15 +63,18 @@ client.on('open', () => {
             console.log(`A device with the name ${config.deviceName} was not found.`);
     }
 });
-
+client.on('close', () => {
+    sendTimers.forEach(interval => clearInterval(interval));
+    sendTimers = [];
+});
 //make it easy to create mock datapoints and send them as delta messages
 function mockSensor(datapoint: string, median: number, variance: number, frequency: number) {
     let value;
-    setInterval(() => {
+    sendTimers.push(setInterval(() => {
         value = (median - variance) + Math.round(Math.random() * variance);
         console.log(`Sending ${value} for ${datapoint}`);
         sendDeltaMessage(config.deviceName, datapoint, value)
-    }, frequency)
+    }, frequency));
 
 }
 function sendDeltaMessage(deviceName: string, path: string, value: any) {

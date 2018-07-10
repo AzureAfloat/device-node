@@ -3,6 +3,7 @@ const WS = require('ws');
 const EventEmitter = require('events').EventEmitter;
 export class WebSocketClient extends EventEmitter {
     connectInterval;
+    private socket: WebSocket;
     constructor(private options) {
         super();
         this.connect();
@@ -15,7 +16,7 @@ export class WebSocketClient extends EventEmitter {
             clearInterval(this.connectInterval);
             console.log('Websocket is open');
         }
-        this.socket.onerror = (ev) => {
+        this.socket.onerror = (ev: any) => {
             switch (ev.error.code) {
                 case 'ECONNRESET':
                     this.reconnect();
@@ -28,6 +29,7 @@ export class WebSocketClient extends EventEmitter {
     }
     private close() {
         this.socket.onclose = () => {
+            this.emit('close');
             console.log('Websocket is closed reestablishing connection..');
             this.reconnect();
         }
@@ -41,10 +43,8 @@ export class WebSocketClient extends EventEmitter {
     }
     public send(msg) {
         if (WS.readyState != OPEN)
-            this.close()
-
-        if (WS.readyState === OPEN)
-            this.socket.send(msg);
+            this.close();
+        this.socket.send(msg);
+        return this.socket;
     }
-
 }
