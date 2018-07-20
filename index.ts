@@ -1,9 +1,15 @@
 import { WebSocketClient } from "./WebSocketClient";
-
-// const WS = require('ws');
 let config = require('./device.json');
-const commandLineArgs = require('command-line-args')
+const commandLineArgs = require('command-line-args');
+import * as fs from 'fs';
+
+require('dotenv').config();
+
 let sendTimers: any[] = [];
+
+//check that the file queue path exists
+const FILE_QUEUE_PATH = process.env.FILE_QUEUE_PATH || './queue';
+if(!fs.existsSync(FILE_QUEUE_PATH)) fs.mkdirSync(FILE_QUEUE_PATH);
 
 //override config with command line options  
 let args = [
