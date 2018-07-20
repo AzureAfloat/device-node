@@ -1,7 +1,11 @@
 import { WebSocketClient } from "./WebSocketClient";
+import commandLineArgs from 'command-line-args';
+import moment from 'moment';
+
 let config = require('./device.json');
-const commandLineArgs = require('command-line-args');
-import * as fs from 'fs';
+import fs from 'fs';
+import path from 'path';
+
 
 require('dotenv').config();
 
@@ -9,7 +13,7 @@ let sendTimers: any[] = [];
 
 //check that the file queue path exists
 const FILE_QUEUE_PATH = process.env.FILE_QUEUE_PATH || './queue';
-if(!fs.existsSync(FILE_QUEUE_PATH)) fs.mkdirSync(FILE_QUEUE_PATH);
+if (!fs.existsSync(FILE_QUEUE_PATH)) fs.mkdirSync(FILE_QUEUE_PATH);
 
 //override config with command line options  
 let args = [
@@ -73,13 +77,20 @@ client.on('close', () => {
     sendTimers.forEach(interval => clearInterval(interval));
     sendTimers = [];
 });
+
 //make it easy to create mock datapoints and send them as delta messages
 function mockSensor(datapoint: string, median: number, variance: number, frequency: number) {
     let value;
     sendTimers.push(setInterval(() => {
         value = (median - variance) + Math.round(Math.random() * variance);
         console.log(`Sending ${value} for ${datapoint}`);
-        sendDeltaMessage(config.deviceName, datapoint, value)
+        let timestamp = moment().utc().format('YYYY-MM-DDTHHmmss.SSSS[Z]');
+        datapoint = datapoint.replace(/\//g, '_');
+        let filename = `${timestamp}_${datapoint}`;
+
+        let fullpath = path.join(FILE_QUEUE_PATH, filename);
+        fs.writeFileSync(fullpath, value, 'utf8');
+        // sendDeltaMessage(config.deviceName, datapoint, value)
     }, frequency));
 
 }

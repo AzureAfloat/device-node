@@ -18,11 +18,11 @@
     "url": "https://github.com/azureafloat/device-node"
   },
   "dependencies": {
-    "@types/node": "^10.5.2",
     "@types/ws": "^5.1.2",
     "EventEmitter": "^1.0.0",
     "command-line-args": "^5.0.2",
     "dotenv": "^6.0.0",
+    "moment": "^2.22.2",
     "ws": "^5.2.1",
     "yargs": "^11.1.0"
   },
