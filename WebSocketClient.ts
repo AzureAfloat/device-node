@@ -1,4 +1,3 @@
-import { OPEN } from "ws";
 const WS = require('ws');
 const EventEmitter = require('events').EventEmitter;
 export class WebSocketClient extends EventEmitter {
@@ -42,7 +41,7 @@ export class WebSocketClient extends EventEmitter {
         }, 5000);
     }
     public send(msg) {
-        if (WS.readyState != OPEN)
+        if (WS.readyState != WS.OPEN)
             this.close();
         this.socket.send(msg);
         return this.socket;
