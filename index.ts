@@ -27,8 +27,8 @@ args.filter(a => a.required && !config[a.name]).forEach(a => {
 switch (config.deviceName) {
     case "rpz-cockpit":
         startSmartCabinDoor();
-        mockSensor("environment/outside/temperature", 68, 5, 3000);
-        mockSensor("environment/outside/humidity", 40, 3, 3000);
+        // mockSensor("environment/outside/temperature", 68, 5, 3000);
+        // mockSensor("environment/outside/humidity", 40, 3, 3000);
 
 
         break;
