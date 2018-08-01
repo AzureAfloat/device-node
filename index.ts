@@ -1,9 +1,14 @@
+
+import { resolve } from "dns";
+import { EADDRNOTAVAIL } from "constants";
+import { startSmartCabinDoor } from "./startSmartCabinDoor";
 import { WebSocketClient } from "./WebSocketClient";
 import commandLineArgs from 'command-line-args';
 import * as fileRelay from "./fileRelay";
 import * as sensorReader from "./sensorReader";
 import fs from 'fs';
 
+const WS = require('ws');
 export let config = require('./device.json');
 
 //override config with command line options  
@@ -13,11 +18,10 @@ let args = [
     { name: 'fileQueuePath', alias: 'q', required: true, defaultValue: './queue' }
 ];
 config = { ...config, ...commandLineArgs(args) };
-
 //throw errors if any required arguments are missing
 args.filter(a => a.required && !config[a.name]).forEach(a => {
     throw new Error(`A ${a.name} argument must be provided either in a device.json file or as a command line argument (--${a.name} or -${a.alias}).`);
-})
+});
 
 //ensure the file queue path exists
 if (!fs.existsSync(config.fileQueuePath)) fs.mkdirSync(config.fileQueuePath);
@@ -27,6 +31,6 @@ export let client = new WebSocketClient(config.websocketUrl);
 
 //start reading sensor data right away
 sensorReader.start();
-
 client.on('open', () => fileRelay.start());
 client.on('close', () => fileRelay.stop());
+
