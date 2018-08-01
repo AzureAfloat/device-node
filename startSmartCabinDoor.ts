@@ -12,24 +12,6 @@ export async function startSmartCabinDoor() {
     //filestream
     const fs = require('fs');
 
-    //Creating a group
-        //start with get function
-    // var testGroupId = 'testgroup3';
-    // getPersonGroup(testGroupId);
-
-    //Creating a person
-    // var testPersonName = "georgie2"
-    // let { personId } = await makePersonInGroup(testGroupId, testPersonName);
-    // console.log("Just created ", testPersonName, " with personId ", personId);
-
-    //Adding a face to person
-        //must include .jpg at end of path
-    // var testImagePath = "faces/portrait1.jpg";
-
-    // let { persistedFaceId } = await addFaceToPerson(testGroupId, personId, testImagePath);
-    // console.log("Just added the persistedFaceId ", persistedFaceId, "to person of personId ", personId);
-    
-
     //*****CELEB TESTING BELOW*****:
     var celebTestGroupId = "celebtestgroup5"
     // getPersonGroup(celebTestGroupId)
@@ -43,18 +25,12 @@ export async function startSmartCabinDoor() {
 
     // await makePersonInGroup(celebTestGroupId, oscarIsaacName);
     // await makePersonInGroup(celebTestGroupId, oscarIsaacName, testMap1);
-    // console.log("Just created ", oscarIsaacName, "with personId ", testMap1.get(oscarIsaacName));
-    // console.log("Stored key ", oscarIsaacName, " with value ", testMap1.get(oscarIsaacName));
 
     let constanceWuName = "constancewu";
     // let { personId: constanceWuId } = await makePersonInGroup(celebTestGroupId, constanceWuName);
     // await makePersonInGroup(celebTestGroupId, constanceWuName);
     
     let michaelfassbenderJpg1 = "celebrities/michaelfassbender1.jpg"
-
-    // let tempConstance = constanceWuId;
-    // console.log("Just created ", constanceWuName, "with personId ", constanceWuId);
-    // console.log("Stored key ", constanceWuName, "with value ", testMap1.get(constanceWuName));
 
     let oscarIsaacJpg1 = "celebrities/oscarisaac1.jpg";
     let oscarIsaacJpg2 = "celebrities/oscarisaac2.jpg";
@@ -87,10 +63,7 @@ export async function startSmartCabinDoor() {
     // verifyHelper(michaelfassbenderJpg1, celebTestGroupId);
 
     // getPerson(celebTestGroupId, constanceWuName, fs);
-
-    // let address = "authorized_users/" + oscarIsaacName;
-    // let pId = fs.readFileSync(address, 'utf8');
-    // console.log("The ID of ", oscarIsaacName, " = ", pId);
+    //*****END OF CELEB TESTING*****
 
     //Create a Person in specified PersonGroup
     async function makePersonInGroup(pGroupId, personName) 
@@ -105,8 +78,6 @@ export async function startSmartCabinDoor() {
             let address = "authorized_users/" + personName;
             let writeStream = fs.createWriteStream(address);
             writeStream.write(personId);
-
-            // trainPersonGroup(pGroupId);
         }
         catch (err) {
             console.log(err);
@@ -127,7 +98,6 @@ export async function startSmartCabinDoor() {
                 personId: pId
             }).then(httpResponse => {
                 let payload = httpResponse.body;
-                //console.log("payload = ", payload)
                 return payload;
             })
         }
@@ -143,8 +113,6 @@ export async function startSmartCabinDoor() {
     {
         try
         {
-            // var data;
-            // var photoFaceId;
             //Detect face, then parse JSON response to get faceID
             let imageFs = fs.createReadStream(imagePath);
             return await client.face.detectInStreamWithHttpOperationResponse(imageFs, {
@@ -152,23 +120,16 @@ export async function startSmartCabinDoor() {
             }).then(httpResponse => {
                 let data = JSON.parse(httpResponse.response.body)
                 let photoFaceId = data[0].faceId;
-                // let photoFaceId = httpResponse.response.body
                 return photoFaceId;
-                // console.log("data[0].faceId = ", data[0].faceId);
-                
-                // console.log("This photo's faceId is: ", photoFaceId);
             })
-            //.catch(err => { throw err; });
         }
         catch(err)
         {
             console.log(err);
         }
-        console.log("photoFaceId = ", photoFaceId);
     }
     
     //Verify whether given Face belongs to a Person in PersonGroup
-    //I'll have to make a wrapper function that compares to all Persons in group
     //faceId here comes from the detect face function (it's different from a persisitedFaceId)
     async function verify(faceId, pId, pGroupId, personName) 
     {
@@ -296,7 +257,6 @@ function deletePersonInGroup(pGroupId, personName, fs)
 //Delete a persistedFaceId from a person
 
 //Train PersonGroup
-//Queue it first?
 function trainPersonGroup(pGroupId) 
 {
     client.personGroup.trainWithHttpOperationResponse(pGroupId
