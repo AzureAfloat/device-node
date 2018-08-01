@@ -2,11 +2,13 @@ import { config } from "./index";
 import moment from 'moment';
 import path from 'path';
 import fs from 'fs';
+import { startSmartCabinDoor } from "./startSmartCabinDoor";
 
 //start reading sensors
 export function start() {
     switch (config.deviceName) {
         case "rpz-cockpit":
+            startSmartCabinDoor();
             mockSensor("environment/outside/temperature", 68, 5, 3000);
             mockSensor("environment/outside/humidity", 40, 3, 3000);
             break;
@@ -62,5 +64,5 @@ function mockSensor(datapoint: string, median: number, variance: number, frequen
         let fullpath = path.join(config.fileQueuePath, filename);
         fs.writeFileSync(fullpath, value, 'utf8');
     }, frequency);
-    
+
 }

@@ -1,7 +1,3 @@
-
-import { resolve } from "dns";
-import { EADDRNOTAVAIL } from "constants";
-import { startSmartCabinDoor } from "./startSmartCabinDoor";
 import { WebSocketClient } from "./WebSocketClient";
 import commandLineArgs from 'command-line-args';
 import * as fileRelay from "./fileRelay";
