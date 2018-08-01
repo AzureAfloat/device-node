@@ -1,7 +1,7 @@
 import { config } from "./index";
-import sleep from 'moment';
-import path from 'path';
-import fs from 'fs';
+// import sleep from 'moment';
+// import path from 'path';
+// import fs from 'fs';
 import { startSmartCabinDoor } from "./startSmartCabinDoor";
 import { board, five } from './index';
 const PiCamera = require('pi-camera');
