@@ -1,5 +1,5 @@
 //Smart Cabin Door functionailty
-var HashMap = require('hashmap');
+const fs = require('fs');
 
 //Create credentials
 const FaceAPIClient = require('azure-cognitiveservices-face');
@@ -10,7 +10,6 @@ let client = new FaceAPIClient(credentials, 'westus');
 
 export async function startSmartCabinDoor() {
     //filestream
-    const fs = require('fs');
 
     //*****CELEB TESTING BELOW*****:
     var celebTestGroupId = "celebtestgroup5"

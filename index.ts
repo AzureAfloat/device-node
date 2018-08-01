@@ -1,10 +1,13 @@
 import { WebSocketClient } from "./WebSocketClient";
 import commandLineArgs from 'command-line-args';
 import * as fileRelay from "./fileRelay";
-import * as sensorReader from "./sensorReader";
+import * as sensorReader from "./boardManager";
 import fs from 'fs';
 
 const WS = require('ws');
+
+export const five = require('johnny-five');
+export let board = new five.Board();
 export let config = require('./device.json');
 
 //override config with command line options  
