@@ -1,18 +1,40 @@
 import { config } from "./index";
-import moment from 'moment';
+import sleep from 'moment';
 import path from 'path';
 import fs from 'fs';
 import { startSmartCabinDoor } from "./startSmartCabinDoor";
 import { board, five } from './index';
-const raspio = require('raspi-io');
+const PiCamera = require('pi-camera');
 
-board.on("ready", function readyOnCall() { });
+//const raspio = require('raspi-io');
+
+board.on("ready", function boardOnReady() { });
 //start reading sensors
 export function start() {
     switch (config.deviceName) {
         case "rpz-cockpit":
+            board.boardOnReady();
             let imagebutton = new five.Button(8);
-            startSmartCabinDoor();
+            imagebutton.on('press', () => {
+                const rpzCockpitCamera = new PiCamera({
+                    mode: 'photo',
+                    output: `${__dirname}/test.jpg`,
+                    width: 640,
+                    height: 480,
+                    nopreview: true,
+                });
+                rpzCockpitCamera.snap()
+                    .then((result) => {
+                        console.log('Picture taken' + result);
+                    })
+                    .catch((error) => {
+                        console.log('There was an error' + error);
+                    });
+            });
+            imagebutton.on('release', () => {
+                startSmartCabinDoor();
+
+            })
             // mockSensor("environment/outside/temperature", 68, 5, 3000);
             // mockSensor("environment/outside/humidity", 40, 3, 3000);
             break;
@@ -56,17 +78,17 @@ export function start() {
 }
 
 //make it easy to create mock datapoints and send them as delta messages
-function mockSensor(datapoint: string, median: number, variance: number, frequency: number) {
-    let value;
-    setInterval(() => {
-        value = (median - variance) + Math.round(Math.random() * variance);
-        let timestamp = moment().utc().format('YYYY-MM-DDTHHmmss.SSSS[Z]');
-        datapoint = datapoint.replace(/\//g, '_');
-        let filename = `${timestamp}_${datapoint}`;
-        console.log(`creating ${filename}`);
+// function mockSensor(datapoint: string, median: number, variance: number, frequency: number) {
+//     let value;
+//     setInterval(() => {
+//         value = (median - variance) + Math.round(Math.random() * variance);
+//         let timestamp = moment().utc().format('YYYY-MM-DDTHHmmss.SSSS[Z]');
+//         datapoint = datapoint.replace(/\//g, '_');
+//         let filename = `${timestamp}_${datapoint}`;
+//         console.log(`creating ${filename}`);
 
-        let fullpath = path.join(config.fileQueuePath, filename);
-        fs.writeFileSync(fullpath, value, 'utf8');
-    }, frequency);
+//         let fullpath = path.join(config.fileQueuePath, filename);
+//         fs.writeFileSync(fullpath, value, 'utf8');
+//     }, frequency);
 
-}
+// }
