@@ -1,40 +1,51 @@
 import { config } from "./index";
 // import sleep from 'moment';
-// import path from 'path';
-// import fs from 'fs';
+import join from 'path';
+import { sendDeltaMessage } from './fileRelay';
+import { watch, readdir, readFile } from "fs";
 import { startSmartCabinDoor } from "./startSmartCabinDoor";
 import { board, five } from './index';
 const PiCamera = require('pi-camera');
-
+const pattern = /.*Z_(.*)/;
 //const raspio = require('raspi-io');
 
-board.on("ready", function boardOnReady() { });
+board.on("ready", function onReady() { });
 //start reading sensors
 export function start() {
     switch (config.deviceName) {
         case "rpz-cockpit":
-            board.boardOnReady();
+            board.onReady();
             let imagebutton = new five.Button(8);
             imagebutton.on('press', () => {
                 const rpzCockpitCamera = new PiCamera({
                     mode: 'photo',
-                    output: `${__dirname}/test.jpg`,
+                    output: 'faces/test.jpg',
                     width: 640,
                     height: 480,
                     nopreview: true,
                 });
                 rpzCockpitCamera.snap()
                     .then((result) => {
-                        console.log('Picture taken' + result);
+                        console.log('Picture taken');
+                        watch(result, (eventType, file) => {
+                            if (eventType == 'rename' && pattern.test(file)) sendFile(file);
+                        });
+                        function sendFile(file) {
+                            console.log('sending ' + file);
+                            readFile(result, (err, data) => {
+                                let datapointName = pattern.exec(file);
+                                //send the file contents
+                                if (data) sendDeltaMessage(config.deviceName, (datapointName ? datapointName[1] : ''), data.toString());
+                            })
+                        }
+                        
                     })
                     .catch((error) => {
                         console.log('There was an error' + error);
                     });
             });
-            imagebutton.on('release', () => {
-                startSmartCabinDoor();
+            imagebutton.on('release', () => startSmartCabinDoor())
 
-            })
             // mockSensor("environment/outside/temperature", 68, 5, 3000);
             // mockSensor("environment/outside/humidity", 40, 3, 3000);
             break;

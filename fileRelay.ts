@@ -39,7 +39,7 @@ function sendFile(file) {
     })
 }
 
-function sendDeltaMessage(deviceName: string, path: string, value: any) {
+export function sendDeltaMessage(deviceName: string, path: string, value: any) {
     let delta = {
         "updates": [
             {

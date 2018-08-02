@@ -6,7 +6,7 @@ const FaceAPIClient = require('azure-cognitiveservices-face');
 const CognitiveServicesCredentials = require('ms-rest-azure').CognitiveServicesCredentials;
 let credentials = new CognitiveServicesCredentials("31fa991dd9824dacacfce77c70ed1892");
 let client = new FaceAPIClient(credentials, 'westus');
-
+let testGroup = './faces'
 
 export async function startSmartCabinDoor() {
     //filestream
@@ -153,10 +153,7 @@ export async function startSmartCabinDoor() {
         let detectedFaceId = await detectFace(imagePath);
         var i;
         let allPersons = fs.readdirSync("authorized_users")
-
         console.log("Iterating through this list now: ", allPersons);
-
-        
             for (i = 0; i < allPersons.length; i++)
             {
                 let address = "authorized_users/" + allPersons[i];
