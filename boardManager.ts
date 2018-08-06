@@ -1,8 +1,7 @@
 import { config } from "./index";
 // import sleep from 'moment';
-import join from 'path';
 import { sendDeltaMessage } from './fileRelay';
-import { watch, readdir, readFile } from "fs";
+import { watch, readFile } from "fs";
 import { startSmartCabinDoor } from "./startSmartCabinDoor";
 import { board, five } from './index';
 const PiCamera = require('pi-camera');
@@ -27,15 +26,15 @@ export function start() {
                 rpzCockpitCamera.snap()
                     .then((result) => {
                         console.log('Picture taken');
-                        watch(result, (eventType, file) => {
-                            if (eventType == 'rename' && pattern.test(file)) sendFile(file);
+                        watch(result, (eventType, photoFile) => {
+                            if (eventType == 'rename' && pattern.test(photoFile)) sendPhoto(photoFile);
                         });
-                        function sendFile(file) {
-                            console.log('sending ' + file);
-                            readFile(result, (err, data) => {
-                                let datapointName = pattern.exec(file);
+                        function sendPhoto(photoFile) {
+                            console.log('sending ' + photoFile);
+                            readFile(result, (err, photo) => {
+                                let photoName = pattern.exec(photoFile);
                                 //send the file contents
-                                if (data) sendDeltaMessage(config.deviceName, (datapointName ? datapointName[1] : ''), data.toString());
+                                if (photo) sendDeltaMessage(config.deviceName, (photoName ? photoName[1] : ''), photo);
                             })
                         }
                         
