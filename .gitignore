@@ -52,3 +52,5 @@ jspm_packages
 .vscode
 package-lock.json
 device.json
+.env
+queue
