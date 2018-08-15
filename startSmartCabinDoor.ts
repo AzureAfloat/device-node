@@ -1,3 +1,5 @@
+import { resolve } from "url";
+
 //Smart Cabin Door functionailty
 var HashMap = require('hashmap');
 
@@ -9,6 +11,7 @@ let client = new FaceAPIClient(credentials, 'westus');
 
 
 export async function startSmartCabinDoor() {
+
     //filestream
     const fs = require('fs');
 
@@ -29,7 +32,7 @@ export async function startSmartCabinDoor() {
     let constanceWuName = "constancewu";
     // let { personId: constanceWuId } = await makePersonInGroup(celebTestGroupId, constanceWuName);
     // await makePersonInGroup(celebTestGroupId, constanceWuName);
-    
+
     let michaelfassbenderJpg1 = "celebrities/michaelfassbender1.jpg"
 
     let oscarIsaacJpg1 = "celebrities/oscarisaac1.jpg";
@@ -66,8 +69,7 @@ export async function startSmartCabinDoor() {
     //*****END OF CELEB TESTING*****
 
     //Create a Person in specified PersonGroup
-    async function makePersonInGroup(pGroupId, personName) 
-    {
+    async function makePersonInGroup(pGroupId, personName) {
         try {
             let { personId } = await client.person.create(pGroupId, {
                 personGroupId: pGroupId,
@@ -86,55 +88,32 @@ export async function startSmartCabinDoor() {
 
     //Add Face to a Person
     //not sure why this is working with 2 returns...    
-    async function addFaceToPerson(pGroupId, personName, imagePath)
-    {
-        try
-        {   let address = "authorized_users/" + personName;
-            let pId = fs.readFileSync(address, 'utf8');
-            let imageFs = fs.createReadStream(imagePath)
-            return await client.person.addPersonFaceFromStreamWithHttpOperationResponse(pGroupId, pId, imageFs,
-            {
-                personGroupId: pGroupId,
-                personId: pId
-            }).then(httpResponse => {
-                let payload = httpResponse.body;
-                return payload;
-            })
-        }
-        catch (err)
-        {
-            console.log(err);
-        }
+    function addFaceToPerson(pGroupId, personName, imagePath) {
+        let address = "authorized_users/" + personName;
+        let pId = fs.readFileSync(address, 'utf8');
+        let imageFs = fs.createReadStream(imagePath)
+        return client.person.addPersonFaceFromStreamWithHttpOperationResponse(pGroupId, pId, imageFs)
+            .then(res => res.body)
+            .catch(err => console.log(err));
     }
 
-
     //*****this function also works only with the two returns... why?
-    async function detectFace(imagePath)
-    {
-        try
-        {
-            //Detect face, then parse JSON response to get faceID
-            let imageFs = fs.createReadStream(imagePath);
-            return await client.face.detectInStreamWithHttpOperationResponse(imageFs, {
-                returnFaceId: true
-            }).then(httpResponse => {
+    function detectFace(imagePath) {
+        //Detect face, then parse JSON response to get faceID
+        let imageFs = fs.createReadStream(imagePath);
+        return client.face.detectInStreamWithHttpOperationResponse(imageFs, { returnFaceId: true })
+            .then(httpResponse => {
                 let data = JSON.parse(httpResponse.response.body)
                 let photoFaceId = data[0].faceId;
                 return photoFaceId;
             })
-        }
-        catch(err)
-        {
-            console.log(err);
-        }
+            .catch(err => console.log(err));
     }
-    
+
     //Verify whether given Face belongs to a Person in PersonGroup
     //faceId here comes from the detect face function (it's different from a persisitedFaceId)
-    async function verify(faceId, pId, pGroupId, personName) 
-    {
-        try 
-        {
+    async function verify(faceId, pId, pGroupId, personName) {
+        try {
             return await client.face.verifyWithPersonGroupWithHttpOperationResponse(faceId, pId, pGroupId
             ).then(httpResponse => {
                 let verified = httpResponse.body.isIdentical;
@@ -142,14 +121,12 @@ export async function startSmartCabinDoor() {
                 return verified;
             })
         }
-        catch(err)
-        {
+        catch (err) {
             console.log(err);
         }
     }
 
-    async function verifyHelper(imagePath, pGroupId)
-    {
+    async function verifyHelper(imagePath, pGroupId) {
         let isAuthorized = false;
         let detectedFaceId = await detectFace(imagePath);
         var i;
@@ -157,35 +134,30 @@ export async function startSmartCabinDoor() {
 
         console.log("Iterating through this list now: ", allPersons);
 
-        
-            for (i = 0; i < allPersons.length; i++)
-            {
-                let address = "authorized_users/" + allPersons[i];
-                let pId = fs.readFileSync(address, 'utf8');
-                let tempBool = await verify(detectedFaceId, pId, pGroupId, allPersons[i]);
-                isAuthorized = tempBool;
-                if (isAuthorized)
-                {
-                    break;
-                }
-            }
 
-        if (isAuthorized)
-        {
+        for (i = 0; i < allPersons.length; i++) {
+            let address = "authorized_users/" + allPersons[i];
+            let pId = fs.readFileSync(address, 'utf8');
+            let tempBool = await verify(detectedFaceId, pId, pGroupId, allPersons[i]);
+            isAuthorized = tempBool;
+            if (isAuthorized) {
+                break;
+            }
+        }
+
+        if (isAuthorized) {
             console.log("Congratulations! Unlocking cabin door :)");
         }
-        else
-        {
+        else {
             console.log("Sorry, you are not authorized to unlock the cabin door :(");
         }
     }
 }
 
 //Create new PersonGroup
-    //First, get PersonGroup
-    //if fails, create persongroup
-function getPersonGroup(pGroupId) 
-{
+//First, get PersonGroup
+//if fails, create persongroup
+function getPersonGroup(pGroupId) {
     client.personGroup.get(pGroupId
     ).then(pgId => {
         console.log("The PersonGroup", pGroupId, " already exists");
@@ -208,13 +180,12 @@ function makePersonGroup(pGroupId) //pGroupId is a string with NO CAPITAL LETTER
     console.log("Just created this PersonGroup: ", pGroupId);
 }
 
-function getPerson(pGroupId, personName, fs)
-{
+function getPerson(pGroupId, personName, fs) {
     let address = "authorized_users/" + personName;
     let pId = fs.readFileSync(address, 'utf8');
 
     console.log("The ID of ", personName, " = ", pId);
-    
+
     client.person.get(pGroupId, pId
     ).then(response => {
         console.log(response);
@@ -225,8 +196,7 @@ function getPerson(pGroupId, personName, fs)
 }
 
 //List all Persons in specified PersonGroup
-function listPersonsInGroup(pGroupId)
-{
+function listPersonsInGroup(pGroupId) {
     client.person.listWithHttpOperationResponse(pGroupId
     ).then(httpResponse => {
         let personList = httpResponse.body
@@ -237,8 +207,7 @@ function listPersonsInGroup(pGroupId)
 }
 
 //Delete a Person from a specified PersonGroup
-function deletePersonInGroup(pGroupId, personName, fs)
-{
+function deletePersonInGroup(pGroupId, personName, fs) {
     let address = "authorized_users/" + personName;
     let pId = fs.readFileSync(address, 'utf8');
     client.person.deleteMethod(pGroupId, pId
@@ -257,8 +226,7 @@ function deletePersonInGroup(pGroupId, personName, fs)
 //Delete a persistedFaceId from a person
 
 //Train PersonGroup
-function trainPersonGroup(pGroupId) 
-{
+function trainPersonGroup(pGroupId) {
     client.personGroup.trainWithHttpOperationResponse(pGroupId
     ).then(httpResponse => {
         console.log("Just trained the group ", pGroupId);
